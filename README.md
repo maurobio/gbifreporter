@@ -1,2 +1,2 @@
-# gbifreporter
- Creates statistical reports from GBIF text delimited data
+# GBIFReporter
+ Creates statistical reports from [GBIF](http://www.gbif.org/) text delimited data.
