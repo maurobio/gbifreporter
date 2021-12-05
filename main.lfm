@@ -1,0 +1,85 @@
+object MainForm: TMainForm
+  Left = 256
+  Height = 360
+  Top = 145
+  Width = 630
+  Caption = 'GBIFReporter'
+  ClientHeight = 340
+  ClientWidth = 630
+  Menu = MainMenu
+  Position = poDesktopCenter
+  LCLVersion = '2.0.12.0'
+  object HtmlViewer: THtmlViewer
+    Left = 0
+    Height = 340
+    Top = 0
+    Width = 630
+    BorderStyle = htFocused
+    DefBackground = clNone
+    HistoryMaxCount = 0
+    NoSelect = False
+    PrintMarginBottom = 2
+    PrintMarginLeft = 2
+    PrintMarginRight = 2
+    PrintMarginTop = 2
+    PrintScale = 1
+    Align = alClient
+    TabOrder = 0
+    Visible = False
+  end
+  object MainMenu: TMainMenu
+    Left = 24
+    Top = 16
+    object FileMenu: TMenuItem
+      Caption = '&File'
+      object FileOpenItem: TMenuItem
+        Caption = '&Open...'
+        OnClick = FileOpenItemClick
+      end
+      object S1: TMenuItem
+        Caption = '-'
+      end
+      object FileExitItem: TMenuItem
+        Caption = '&Quit'
+        OnClick = FileExitItemClick
+      end
+    end
+    object HelpMenu: TMenuItem
+      Caption = '&Help'
+      object HelpAboutItem: TMenuItem
+        Caption = '&About...'
+        OnClick = HelpAboutItemClick
+      end
+    end
+  end
+  object OpenDialog: TOpenDialog
+    Title = 'Open existing file'
+    DefaultExt = '.csv'
+    Filter = 'Comma-Separated Values (*.csv)|*.csv'
+    Options = [ofFileMustExist, ofEnableSizing, ofViewDetail]
+    Left = 68
+    Top = 14
+  end
+  object ZMConnection: TZMConnection
+    Connected = False
+    FloatPrecision = 0
+    Left = 24
+    Top = 72
+  end
+  object ZMQueryDataSet: TZMQueryDataSet
+    FieldDefs = <>
+    ZMConnection = ZMConnection
+    QueryExecuted = False
+    TableLoaded = False
+    TableSaved = False
+    DynamicFieldsCreated = False
+    PeristentFieldsCreated = False
+    MemoryDataSetOpened = False
+    PersistentSave = False
+    Parameters = <>
+    MasterDetailFiltration = False
+    FilterOptions = []
+    Left = 68
+    Top = 72
+  end
+end
