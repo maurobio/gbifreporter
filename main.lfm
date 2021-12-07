@@ -44,6 +44,38 @@ object MainForm: TMainForm
         OnClick = FileExitItemClick
       end
     end
+    object ReportMenu: TMenuItem
+      Caption = 'Report'
+      object ReportKingdomItem: TMenuItem
+        AutoCheck = True
+        Caption = 'Kingdom'
+        Checked = True
+      end
+      object ReportPhylumItem: TMenuItem
+        AutoCheck = True
+        Caption = 'Phylum/Division'
+      end
+      object ReportClassItem: TMenuItem
+        AutoCheck = True
+        Caption = 'Class'
+      end
+      object ReportOrderItem: TMenuItem
+        AutoCheck = True
+        Caption = 'Order'
+      end
+      object ReportFamilyItem: TMenuItem
+        AutoCheck = True
+        Caption = 'Family'
+      end
+      object ReportGenusItem: TMenuItem
+        AutoCheck = True
+        Caption = 'Genus'
+      end
+      object ReportSpeciesItem: TMenuItem
+        AutoCheck = True
+        Caption = 'Species'
+      end
+    end
     object HelpMenu: TMenuItem
       Caption = '&Help'
       object HelpAboutItem: TMenuItem

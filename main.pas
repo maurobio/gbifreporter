@@ -24,6 +24,7 @@
 {                                                                               }
 {  REVISION HISTORY:                                                            }
 {     Version 1.00, 5th Dec 21 - Initial release                                }
+{     Version 1.10, 7th Dec 21 - Added report menu                              }
 {===============================================================================}
 
 unit main;
@@ -46,6 +47,14 @@ type
     FileMenu: TMenuItem;
     FileOpenItem: TMenuItem;
     FileExitItem: TMenuItem;
+    ReportSpeciesItem: TMenuItem;
+    ReportGenusItem: TMenuItem;
+    ReportFamilyItem: TMenuItem;
+    ReportOrderItem: TMenuItem;
+    ReportClassItem: TMenuItem;
+    ReportPhylumItem: TMenuItem;
+    ReportKingdomItem: TMenuItem;
+    ReportMenu: TMenuItem;
     S1: TMenuItem;
     HelpMenu: TMenuItem;
     HelpAboutItem: TMenuItem;
@@ -58,7 +67,8 @@ type
   private
 
   public
-
+    outfile: TextFile;
+    procedure GenerateReport(Taxon: string);
   end;
 
 var
@@ -76,14 +86,42 @@ end;
 
 { TMainForm }
 
+procedure TMainForm.GenerateReport(Taxon: string);
+begin
+  Screen.Cursor := crHourGlass;
+  ZMQueryDataset.Open;
+  ZMQueryDataset.SQL.Text :=
+    'SELECT ' + Taxon + ', COUNT(*) FROM ' + ZMQueryDataset.TableName +
+    ' GROUP BY ' + Taxon + ' ORDER BY ' + Taxon;
+  ZMQueryDataset.QueryExecute;
+  WriteLn(outfile, '<table border=1 cellspacing=1 cellpadding=1 width="50%">');
+  WriteLn(outfile, '<tr>');
+  WriteLn(outfile, '<th>', UpperCase(Taxon), '</th>');
+  WriteLn(outfile, '<th>COUNT</th>');
+  WriteLn(outfile, '</tr>');
+  ZMQueryDataset.First;
+  while not ZMQueryDataset.EOF do
+  begin
+    WriteLn(outfile, '<tr>');
+    WriteLn(outfile, '<td align="Left">' +
+      ZMQueryDataset.Fields[0].AsString + '</td>');
+    WriteLn(outfile, '<td align="Right">' +
+      ZMQueryDataset.Fields[1].AsString + '</td>');
+    WriteLn(outfile, '</tr>');
+    ZMQueryDataset.Next;
+  end;
+  ZMQueryDataset.Close;
+  WriteLn(outfile, '</table>');
+  WriteLn(outfile, '<br><br>');
+  Screen.Cursor := crDefault;
+end;
+
 procedure TMainForm.FileExitItemClick(Sender: TObject);
 begin
   Close;
 end;
 
 procedure TMainForm.FileOpenItemClick(Sender: TObject);
-var
-  outfile: TextFile;
 begin
   if OpenDialog.Execute then
   begin
@@ -93,10 +131,9 @@ begin
     ZMQueryDataSet.TableName := GetFileNameWithoutExt(OpenDialog.FileName);
     ZMQueryDataSet.LoadFromTable;
     Screen.Cursor := crDefault;
-    //ShowMessage(IntToStr(ZMQueryDataset.RecordCount) + ' record(s)');
-
-    AssignFile(Outfile, 'report.htm');
-    Rewrite(Outfile);
+    ShowMessage('Read ' + IntToStr(ZMQueryDataset.RecordCount) + ' record(s)');
+    AssignFile(outfile, 'report.htm');
+    Rewrite(outfile);
     WriteLn(outfile, '<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 3.2//EN"">');
     WriteLn(outfile, '<html>');
     WriteLn(outfile, '<head>');
@@ -107,111 +144,27 @@ begin
     WriteLn(outfile, '<h3>Statistical report for "',
       ExtractFileName(OpenDialog.FileName), '"</h3>');
 
-    Screen.Cursor := crHourGlass;
-    ZMQueryDataset.SQL.Text :=
-      'SELECT kingdom, COUNT(*) FROM ' + ZMQueryDataset.TableName
-      //+ ' WHERE Length(kingdom) > 0 AND Length(species) > 0 AND basisOfRecord <> "FOSSIL_SPECIMEN"'
-      + ' GROUP BY kingdom ORDER BY kingdom';
-    Screen.Cursor := crHourGlass;ZMQueryDataset.QueryExecute;
-    WriteLn(outfile, '<table border=1 cellspacing=1 cellpadding=1 width="50%">');
-    WriteLn(outfile, '<tr>');
-    WriteLn(outfile, '<th>KINGDOM</th>');
-    WriteLn(outfile, '<th>COUNT</th>');
-    WriteLn(outfile, '</tr>');
-    ZMQueryDataset.First;
-    while not ZMQueryDataset.EOF do
-    begin
-      WriteLn(outfile, '<tr>');
-      WriteLn(outfile, '<td align="Left">' +
-        ZMQueryDataset.Fields[0].AsString + '</td>');
-      WriteLn(outfile, '<td align="Right">' +
-        ZMQueryDataset.Fields[1].AsString + '</td>');
-      WriteLn(outfile, '</tr>');
-      ZMQueryDataset.Next;
-    end;
-    ZMQueryDataset.Close;
-    WriteLn(outfile, '</table>');
-    WriteLn(outfile, '<br><br>');
+    if ReportKingdomItem.Checked then
+      GenerateReport('kingdom');
+    if ReportPhylumItem.Checked then
+      GenerateReport('phylum');
+    if ReportClassItem.Checked then
+      GenerateReport('class');
+    if ReportOrderItem.Checked then
+      GenerateReport('order');
+    if ReportFamilyItem.Checked then
+      GenerateReport('family');
+    if ReportGenusItem.Checked then
+      GenerateReport('genus');
+    if ReportSpeciesItem.Checked then
+      GenerateReport('species');
 
-    ZMQueryDataset.Open;
-    ZMQueryDataset.SQL.Text :=
-      'SELECT phylum, COUNT(*) FROM ' + ZMQueryDataset.TableName
-      + ' GROUP BY phylum ORDER BY phylum';
-    ZMQueryDataset.QueryExecute;
-    WriteLn(outfile, '<table border=1 cellspacing=1 cellpadding=1 width="50%">');
-    WriteLn(outfile, '<tr>');
-    WriteLn(outfile, '<th>PHYLUM</th>');
-    WriteLn(outfile, '<th>COUNT</th>');
-    WriteLn(outfile, '</tr>');
-    ZMQueryDataset.First;
-    while not ZMQueryDataset.EOF do
-    begin
-      WriteLn(outfile, '<tr>');
-      WriteLn(outfile, '<td align="Left">' +
-        ZMQueryDataset.Fields[0].AsString + '</td>');
-      WriteLn(outfile, '<td align="Right">' +
-        ZMQueryDataset.Fields[1].AsString + '</td>');
-      WriteLn(outfile, '</tr>');
-      ZMQueryDataset.Next;
-    end;
-    ZMQueryDataset.Close;
-    WriteLn(outfile, '</table>');
-    WriteLn(outfile, '<br><br>');
-
-    ZMQueryDataset.Open;
-    ZMQueryDataset.SQL.Text :=
-      'SELECT class, COUNT(*) FROM ' + ZMQueryDataset.TableName
-      + ' GROUP BY class ORDER BY class';
-    ZMQueryDataset.QueryExecute;
-    WriteLn(outfile, '<table border=1 cellspacing=1 cellpadding=1 width="50%">');
-    WriteLn(outfile, '<tr>');
-    WriteLn(outfile, '<th>CLASS</th>');
-    WriteLn(outfile, '<th>COUNT</th>');
-    WriteLn(outfile, '</tr>');
-    ZMQueryDataset.First;
-    while not ZMQueryDataset.EOF do
-    begin
-      WriteLn(outfile, '<tr>');
-      WriteLn(outfile, '<td align="Left">' +
-        ZMQueryDataset.Fields[0].AsString + '</td>');
-      WriteLn(outfile, '<td align="Right">' +
-        ZMQueryDataset.Fields[1].AsString + '</td>');
-      WriteLn(outfile, '</tr>');
-      ZMQueryDataset.Next;
-    end;
-    ZMQueryDataset.Close;
-    WriteLn(outfile, '</table>');
-    WriteLn(outfile, '<br><br>');
-
-    ZMQueryDataset.Open;
-    ZMQueryDataset.SQL.Text :=
-      'SELECT order, COUNT(*) FROM ' + ZMQueryDataset.TableName
-      + ' GROUP BY order ORDER BY order';
-    ZMQueryDataset.QueryExecute;
-    WriteLn(outfile, '<table border=1 cellspacing=1 cellpadding=1 width="50%">');
-    WriteLn(outfile, '<tr>');
-    WriteLn(outfile, '<th>ORDER</th>');
-    WriteLn(outfile, '<th>COUNT</th>');
-    WriteLn(outfile, '</tr>');
-    ZMQueryDataset.First;
-    while not ZMQueryDataset.EOF do
-    begin
-      WriteLn(outfile, '<tr>');
-      WriteLn(outfile, '<td align="Left">' +
-        ZMQueryDataset.Fields[0].AsString + '</td>');
-      WriteLn(outfile, '<td align="Right">' +
-        ZMQueryDataset.Fields[1].AsString + '</td>');
-      WriteLn(outfile, '</tr>');
-      ZMQueryDataset.Next;
-    end;
-    WriteLn(outfile, '</table>');
     WriteLn(outfile, '</body>');
     WriteLn(outfile, '</html>');
     ZMConnection.Disconnect;
-    CloseFile(Outfile);
+    CloseFile(outfile);
     HtmlViewer.LoadFromFile('report.htm');
     HtmlViewer.Visible := True;
-    Screen.Cursor := crDefault;
   end;
 end;
 
