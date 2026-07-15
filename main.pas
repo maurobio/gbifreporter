@@ -1,6 +1,6 @@
 {===============================================================================}
 {    GBIFReporter - Creates statistical reports from GBIF text delimited data   }
-{                   (C) 2016-2021 by Mauro J. Cavalcanti                        }
+{                   (C) 2016-2026 by Mauro J. Cavalcanti                        }
 {                         <maurobio@gmail.com>                                  }
 {                                                                               }
 {  This program is free software; you can redistribute it and/or modify         }
@@ -23,8 +23,9 @@
 {     HtmlViewer 11.9+ (wiki.freepascal.org/THtmlPort)                          }
 {                                                                               }
 {  REVISION HISTORY:                                                            }
-{     Version 1.00, 5th Dec 21 - Initial release                                }
-{     Version 1.10, 7th Dec 21 - Added report menu                              }
+{     Version 1.00,  5th Dec 21 - Initial release                               }
+{     Version 1.10,  7th Dec 21 - Added report menu                             }
+{     Version 1.20, 15th Jul 26 - Improved report menu                          }
 {===============================================================================}
 
 unit main;
@@ -86,34 +87,72 @@ end;
 
 { TMainForm }
 
+function CompareCountsDesc(List: TStringList; Index1, Index2: Integer): Integer;
+var
+  Count1, Count2: Integer;
+begin
+  Count1 := StrToIntDef(Copy(List[Index1], 1, Pos('|', List[Index1]) - 1), 0);
+  Count2 := StrToIntDef(Copy(List[Index2], 1, Pos('|', List[Index2]) - 1), 0);
+
+  if Count1 > Count2 then
+    Result := -1
+  else if Count1 < Count2 then
+    Result := 1
+  else
+    Result := 0;
+end;
+
 procedure TMainForm.GenerateReport(Taxon: string);
+var
+  SortList: TStringList;
+  i: integer;
+  FieldValue: string;
 begin
   Screen.Cursor := crHourGlass;
-  ZMQueryDataset.Open;
-  ZMQueryDataset.SQL.Text :=
-    'SELECT ' + Taxon + ', COUNT(*) FROM ' + ZMQueryDataset.TableName +
-    ' GROUP BY ' + Taxon + ' ORDER BY ' + Taxon;
-  ZMQueryDataset.QueryExecute;
-  WriteLn(outfile, '<table border=1 cellspacing=1 cellpadding=1 width="50%">');
-  WriteLn(outfile, '<tr>');
-  WriteLn(outfile, '<th>', UpperCase(Taxon), '</th>');
-  WriteLn(outfile, '<th>COUNT</th>');
-  WriteLn(outfile, '</tr>');
-  ZMQueryDataset.First;
-  while not ZMQueryDataset.EOF do
-  begin
+  SortList := TStringList.Create;
+  try
+    ZMQueryDataset.Open;
+    ZMQueryDataset.SQL.Text :=
+      'SELECT ' + Taxon + ', COUNT(*) FROM ' + ZMQueryDataset.TableName +
+      ' GROUP BY ' + Taxon;
+    ZMQueryDataset.QueryExecute;
+
+    ZMQueryDataset.First;
+    while not ZMQueryDataset.EOF do
+    begin
+      SortList.Add(IntToStr(ZMQueryDataset.Fields[1].AsInteger) + '|' +
+                   ZMQueryDataset.Fields[0].AsString);
+      ZMQueryDataset.Next;
+    end;
+    ZMQueryDataset.Close;
+
+    SortList.CustomSort(@CompareCountsDesc);
+
+    WriteLn(outfile, '<table border=1 cellspacing=1 cellpadding=1 width="50%">');
     WriteLn(outfile, '<tr>');
-    WriteLn(outfile, '<td align="Left">' +
-      ZMQueryDataset.Fields[0].AsString + '</td>');
-    WriteLn(outfile, '<td align="Right">' +
-      ZMQueryDataset.Fields[1].AsString + '</td>');
+    WriteLn(outfile, '<th>', UpperCase(Taxon), '</th>');
+    WriteLn(outfile, '<th>COUNT</th>');
     WriteLn(outfile, '</tr>');
-    ZMQueryDataset.Next;
+
+    for i := 0 to SortList.Count - 1 do
+    begin
+      WriteLn(outfile, '<tr>');
+      FieldValue := Copy(SortList[i], Pos('|', SortList[i]) + 1, MaxInt);
+      if Trim(FieldValue) = '' then
+        FieldValue := '&lt;NA&gt;';
+      WriteLn(outfile, '<td align="Left">' + FieldValue + '</td>');
+      WriteLn(outfile, '<td align="Right">' +
+        Copy(SortList[i], 1, Pos('|', SortList[i]) - 1) + '</td>');
+      WriteLn(outfile, '</tr>');
+    end;
+
+    WriteLn(outfile, '</table>');
+    WriteLn(outfile, '<br><br>');
+
+  finally
+    SortList.Free;
+    Screen.Cursor := crDefault;
   end;
-  ZMQueryDataset.Close;
-  WriteLn(outfile, '</table>');
-  WriteLn(outfile, '<br><br>');
-  Screen.Cursor := crDefault;
 end;
 
 procedure TMainForm.FileExitItemClick(Sender: TObject);
@@ -171,7 +210,7 @@ end;
 procedure TMainForm.HelpAboutItemClick(Sender: TObject);
 begin
   MessageDlg('Information', 'Creates statistical reports from GBIF text delimited data' +
-    LineEnding + '(c) 2016-2021 Mauro J. Cavalcanti' + LineEnding +
+    LineEnding + '(c) 2016-2026 Mauro J. Cavalcanti' + LineEnding +
     'Ecoinformatics Studio, Rio de Janeiro, Brazil' + LineEnding +
     'E-mail: maurobio@gmail.com', mtInformation, [mbOK], 0);
 end;

@@ -4,14 +4,14 @@ object MainForm: TMainForm
   Top = 145
   Width = 630
   Caption = 'GBIFReporter'
-  ClientHeight = 340
+  ClientHeight = 360
   ClientWidth = 630
   Menu = MainMenu
   Position = poDesktopCenter
-  LCLVersion = '2.0.12.0'
+  LCLVersion = '4.6.0.0'
   object HtmlViewer: THtmlViewer
     Left = 0
-    Height = 340
+    Height = 360
     Top = 0
     Width = 630
     BorderStyle = htFocused
@@ -54,26 +54,32 @@ object MainForm: TMainForm
       object ReportPhylumItem: TMenuItem
         AutoCheck = True
         Caption = 'Phylum/Division'
+        Checked = True
       end
       object ReportClassItem: TMenuItem
         AutoCheck = True
         Caption = 'Class'
+        Checked = True
       end
       object ReportOrderItem: TMenuItem
         AutoCheck = True
         Caption = 'Order'
+        Checked = True
       end
       object ReportFamilyItem: TMenuItem
         AutoCheck = True
         Caption = 'Family'
+        Checked = True
       end
       object ReportGenusItem: TMenuItem
         AutoCheck = True
         Caption = 'Genus'
+        Checked = True
       end
       object ReportSpeciesItem: TMenuItem
         AutoCheck = True
         Caption = 'Species'
+        Checked = True
       end
     end
     object HelpMenu: TMenuItem
